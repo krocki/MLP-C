@@ -1,4 +1,4 @@
-# A 2-layer NN running MNIST in ANSI C contained in 'main' (under 300 loc total)
+# A 2-layer NN contained in 'main' using ANSI C
 
 ## Quick start:
 
