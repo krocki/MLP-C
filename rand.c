@@ -2,6 +2,14 @@
 #include <math.h>
 
 #if defined(__x86_64__)
+/*
+   this way of getting random number is way better
+   on a modern intel cpu compared to the standard rand()
+   uses an instruction 'rdrand'
+   undefine to fall back to the standard libc version
+*/
+
+/* return a rand float in range [0, 1) */
 float randf() {
 
   unsigned long v;
@@ -22,6 +30,7 @@ float randf() {
   return rand() / (RAND_MAX + 1.0f);
 }
 #endif
+/* normal distribution, N(mean, std), n - number of values */
 void randn(float *out, float mean, float std, int n) {
   for (int i=0; i<n; i++) {
     float  x = randf(),
