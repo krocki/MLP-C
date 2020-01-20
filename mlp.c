@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "timer.h"
+#include <sys/time.h>
 
 /* batch size */
 #define B 8
@@ -29,6 +29,11 @@ extern void randn(float *out, float mean, float std, int n);
 
 unsigned char inputs[X * DATAPOINTS];
 unsigned char labels[DATAPOINTS];
+
+double get_time() {
+  struct timeval tv; gettimeofday(&tv, NULL);
+  return (tv.tv_sec + tv.tv_usec * 1e-6);
+}
 
 int load(const char *fname, int offset, int size, unsigned char *data) {
   FILE *f;
