@@ -1,10 +1,17 @@
 CC=gcc
 LD=gcc
 
-OPT_LEVEL=-Ofast -march=native -flto -mavx -mfma -ffp-contract=fast -ffast-math -fomit-frame-pointer
+OPT_LEVEL=-mtune=native -march=native -Ofast
+#OPT_LEVEL=-Ofast -march=native -flto -mavx2 -mfma -ffp-contract=fast -ffast-math -fomit-frame-pointer
 
 CC_OPTS=$(OPT_LEVEL) -fPIC -Wall -Wno-unused-variable -Werror -Wfatal-errors
 LD_OPTS=$(OPT_LEVEL) -lm -lc
+
+AFFINITY=0
+
+ifeq ($(AFFINITY), 1)
+	LD_OPTS:=$(LD_OPTS) -lpthread
+endif
 
 HEADERS:=$(wildcard *.h) Makefile
 

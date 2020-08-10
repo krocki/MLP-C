@@ -1,4 +1,19 @@
+#define _GNU_SOURCE
 #include <stdio.h>
+#include <unistd.h>
+
+/* affinity - may not work without GNU_SOURCE*/
+#include <sched.h> 
+cpu_set_t  mask;
+void set_affinity(int core_id)
+{
+  printf("setting cpu affinity -> %d\n", core_id);
+  CPU_ZERO(&mask);
+  CPU_SET(core_id, &mask);
+  sched_setaffinity(0, sizeof(mask), &mask);
+}
+/* ******************* */
+
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -12,6 +27,7 @@
 #define H 100
 /* output size */
 #define Y 10
+
 
 #define ITERATIONS 1000000
 #define TARGET_ACC 0.965f
@@ -56,6 +72,12 @@ int load(const char *fname, int offset, int size, unsigned char *data) {
 
 int main(int argc, char **argv) {
 
+  if (argc > 1)
+    if (0 == strcmp(argv[1], "help")) {
+      printf("usage: %s cpu_core max_iters lr decay\n", argv[0]);
+      return 0;
+    }
+
   /* x -w-> h -v-> y */
   float *x,*h,*y,*p,*t,*c; /*states*/
   float *w,*v;             /*weights*/
@@ -81,12 +103,12 @@ int main(int argc, char **argv) {
   float smooth_ce = logf(Y);
   float smooth_acc = 1.0f/Y;
 
-  int max_iters = argc > 1 ?
-    atoi(argv[1]) : ITERATIONS;
-  float lr = argc > 2 ?
-    atof(argv[2]) : LEARNING_RATE;
-  float decay = argc > 3 ?
-    atof(argv[3]) : WEIGHT_DECAY;
+  int cpu_core =  argc > 1 ? atoi(argv[1]) : -1;
+  int max_iters = argc > 2 ? atoi(argv[2]) : ITERATIONS;
+  float lr =      argc > 3 ? atof(argv[3]) : LEARNING_RATE;
+  float decay =   argc > 4 ? atof(argv[4]) : WEIGHT_DECAY;
+
+  if (cpu_core >= 0) set_affinity(cpu_core);
 
   if (0 > load("data/train-images-idx3-ubyte",
         16, X * DATAPOINTS, inputs)) return -1;
@@ -153,7 +175,6 @@ int main(int argc, char **argv) {
         m[j] = ((float)random() / (float)RAND_MAX) < DROPOUT ? 0.0f : 1.0f;
         h[j] *= m[j];
       }
-
     }
 
     float act_sum = 0.0f;
