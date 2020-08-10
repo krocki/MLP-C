@@ -9,18 +9,20 @@
 /* input size */
 #define X 784
 /* hidden size */
-#define H 200
+#define H 100
 /* output size */
 #define Y 10
 
-#define ITERATIONS 100000
+#define ITERATIONS 1000000
+#define TARGET_ACC 0.965f
 #define STATS_INTERVAL 50000
-#define SMOOTHING 0.999f
+#define SMOOTHING 0.99999f
 #define LEARNING_RATE 5 * 1e-4f
 #define DATAPOINTS 50000
 #define WEIGHT_DECAY .0f
-#define LOGISTIC 0
-#define RELU 1
+#define LOGISTIC 1
+#define DROPOUT 0.0
+#define RELU 0
 #define TANH 0
 //#define RHO_TARGET 0.2f
 //#define BETA 1e-5f
@@ -40,7 +42,10 @@ int load(const char *fname, int offset, int size, unsigned char *data) {
   f = fopen(fname, "rb");
   if (f) {
     fseek(f, offset, SEEK_SET);
-    fread(data, size, 1, f);
+    if (!fread(data, size, 1, f)) {
+      fprintf(stderr, "couldn't read %s\n", fname);
+      return -1;
+    }
     fclose(f);
     return 0;
   } else {
@@ -56,12 +61,14 @@ int main(int argc, char **argv) {
   float *w,*v;             /*weights*/
   float *dh,*dy;           /*states-grads*/
   float *dw,*dv;           /*weight-grads*/
+  float *m;                /*dropout*/
 
   x  = (float *) malloc( sizeof(float) * X * B);
   w  = (float *) malloc( sizeof(float) * X * H);
   dw = (float *) malloc( sizeof(float) * X * H);
   h  = (float *) malloc( sizeof(float) * H * B);
   dh = (float *) malloc( sizeof(float) * H * B);
+  m  = (float *) malloc( sizeof(float) * H * B);
   v  = (float *) malloc( sizeof(float) * H * Y);
   dv = (float *) malloc( sizeof(float) * Y * H);
   dy = (float *) malloc( sizeof(float) * Y * B);
@@ -95,7 +102,7 @@ int main(int argc, char **argv) {
     ( 1 << 30 );
 
   int samples=0, iters=0;
-  srand(time(0));
+  srand(get_time());
 
   double t0 = get_time();
   double start_time = t0;
@@ -106,7 +113,7 @@ int main(int argc, char **argv) {
     int r[B];
 
     for (int b=0; b < B; b++)
-      r[b] = rand() % DATAPOINTS;
+      r[b] = random() % DATAPOINTS;
 
     memset(t, 0, sizeof(float) * Y * B);
     memset(h, 0, sizeof(float) * H * B);
@@ -140,6 +147,14 @@ int main(int argc, char **argv) {
     #if TANH
       h[j] = tanhf(h[j]);
     #endif
+
+    if (DROPOUT > 0) {
+      for (int j=0; j<H*B; j++) {
+        m[j] = ((float)random() / (float)RAND_MAX) < DROPOUT ? 0.0f : 1.0f;
+        h[j] *= m[j];
+      }
+
+    }
 
     float act_sum = 0.0f;
     for (int i=0; i<H*B; i++)
@@ -272,10 +287,11 @@ int main(int argc, char **argv) {
 
     samples+=B;
 
-  } while (iters++ < max_iters);
+  } while (iters++ < max_iters && smooth_acc < TARGET_ACC);
 
   free(x), free(w), free(dw);
   free(h), free(dh);
+  free(m);
   free(v), free(dv);
   free(y), free(dy);
   free(p), free(c), free(t);
