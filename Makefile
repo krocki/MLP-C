@@ -1,11 +1,10 @@
 CC=gcc
 LD=gcc
 
-OPT_LEVEL=-mtune=native -march=native -Ofast
-#OPT_LEVEL=-Ofast -march=native -flto -mavx2 -mfma -ffp-contract=fast -ffast-math -fomit-frame-pointer
+OPT_LEVEL=-mtune=native -march=native -Ofast -mavx2 -mfma
 
 CC_OPTS=$(OPT_LEVEL) -fPIC -Wall -Wno-unused-variable -Werror -Wfatal-errors
-LD_OPTS=$(OPT_LEVEL) -lm -lc
+LD_OPTS=$(OPT_LEVEL) -lm -lc -flto
 
 AFFINITY=0
 

@@ -124,7 +124,7 @@ int main(int argc, char **argv) {
     ( 1 << 30 );
 
   int samples=0, iters=0;
-  srand(get_time());
+  srand(33);
 
   double t0 = get_time();
   double start_time = t0;
