@@ -8,7 +8,7 @@ make
 ```
 ### To get MNIST data:
 ```
-./get_data.sh
+./getdata.sh
 ```
 ### Run !
 ```
