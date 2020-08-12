@@ -1,19 +1,21 @@
+#ifndef __APPLE__
 #define _GNU_SOURCE
-#include <stdio.h>
-#include <unistd.h>
-
 /* affinity - may not work without GNU_SOURCE*/
 #include <sched.h> 
 cpu_set_t  mask;
 void set_affinity(int core_id)
 {
-  printf("setting cpu affinity -> %d\n", core_id);
   CPU_ZERO(&mask);
   CPU_SET(core_id, &mask);
   sched_setaffinity(0, sizeof(mask), &mask);
 }
 /* ******************* */
+#else
+void set_affinity(int core_id) {};
+#endif
 
+#include <stdio.h>
+#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
