@@ -1,25 +1,10 @@
-#ifndef __APPLE__
-#define _GNU_SOURCE
-/* affinity - may not work without GNU_SOURCE*/
-#include <sched.h> 
-cpu_set_t  mask;
-void set_affinity(int core_id)
-{
-  CPU_ZERO(&mask);
-  CPU_SET(core_id, &mask);
-  sched_setaffinity(0, sizeof(mask), &mask);
-}
-/* ******************* */
-#else
-void set_affinity(int core_id) {};
-#endif
-
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
 #include <sys/time.h>
+#include "io.h"
 
 /* batch size */
 #define B 8
@@ -55,28 +40,11 @@ double get_time() {
   return (tv.tv_sec + tv.tv_usec * 1e-6);
 }
 
-int load(const char *fname, int offset, int size, unsigned char *data) {
-  FILE *f;
-  f = fopen(fname, "rb");
-  if (f) {
-    fseek(f, offset, SEEK_SET);
-    if (!fread(data, size, 1, f)) {
-      fprintf(stderr, "couldn't read %s\n", fname);
-      return -1;
-    }
-    fclose(f);
-    return 0;
-  } else {
-    fprintf(stderr, "couldn't open %s\n", fname);
-    return -1;
-  }
-};
-
 int main(int argc, char **argv) {
 
   if (argc > 1)
     if (0 == strcmp(argv[1], "help")) {
-      printf("usage: %s cpu_core max_iters lr decay\n", argv[0]);
+      printf("usage: %s max_iters lr decay\n", argv[0]);
       return 0;
     }
 
@@ -105,12 +73,9 @@ int main(int argc, char **argv) {
   float smooth_ce = logf(Y);
   float smooth_acc = 1.0f/Y;
 
-  int cpu_core =  argc > 1 ? atoi(argv[1]) : -1;
-  int max_iters = argc > 2 ? atoi(argv[2]) : ITERATIONS;
-  float lr =      argc > 3 ? atof(argv[3]) : LEARNING_RATE;
-  float decay =   argc > 4 ? atof(argv[4]) : WEIGHT_DECAY;
-
-  if (cpu_core >= 0) set_affinity(cpu_core);
+  int max_iters = argc > 1 ? atoi(argv[1]) : ITERATIONS;
+  float lr =      argc > 1 ? atof(argv[2]) : LEARNING_RATE;
+  float decay =   argc > 1 ? atof(argv[3]) : WEIGHT_DECAY;
 
   if (0 > load("data/train-images-idx3-ubyte",
         16, X * DATAPOINTS, inputs)) return -1;

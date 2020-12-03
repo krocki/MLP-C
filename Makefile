@@ -1,29 +1,22 @@
-CC=gcc-10
-LD=gcc-10
+CC=gcc
+LD=gcc
 
-OPT_LEVEL=-mtune=native -march=native -Ofast -mavx2 -mfma
+OPT_LEVEL=-Ofast
 
 CC_OPTS=$(OPT_LEVEL) -fPIC -Wall -Wno-unused-variable -Werror -Wfatal-errors
-LD_OPTS=$(OPT_LEVEL) -lm -lc -flto
-
-AFFINITY=0
-
-ifeq ($(AFFINITY), 1)
-	LD_OPTS:=$(LD_OPTS) -lpthread
-endif
 
 HEADERS:=$(wildcard *.h) Makefile
 
 .SUFFIXES:
 
-TARGETS=softmax
+TARGETS=mlp
 all : $(TARGETS)
 
 %.o: %.c $(HEADERS)
 	$(CC) -c $< -o $@ $(CC_OPTS)
 
 %: %.o rand.o
-	$(LD) $^ -o $@ $(LD_OPTS)
+	$(CC) $^ -o $@ $(CC_OPTS)
 
 clean:
 	rm -rf $(TARGETS) *.o

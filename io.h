@@ -1,4 +1,17 @@
+#ifndef __IO_H__
+#define __IO_H__
+
 #include <stdio.h>
+#include <assert.h>
+
+void store_f32(const char *fname, int len, float *data) {
+
+  FILE *f = fopen(fname, "wb");
+  assert(NULL != f);
+
+  fwrite(data, sizeof(float), len, f);
+  fclose(f);
+}
 
 int load(const char *fname, int offset, int size, unsigned char *data) {
   FILE *f;
@@ -17,3 +30,4 @@ int load(const char *fname, int offset, int size, unsigned char *data) {
   }
 };
 
+#endif // __IO_H__
