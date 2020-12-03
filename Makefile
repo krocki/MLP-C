@@ -1,5 +1,5 @@
-CC=gcc
-LD=gcc
+CC=gcc-10
+LD=gcc-10
 
 OPT_LEVEL=-mtune=native -march=native -Ofast -mavx2 -mfma
 
@@ -16,13 +16,13 @@ HEADERS:=$(wildcard *.h) Makefile
 
 .SUFFIXES:
 
-TARGETS=mlp
+TARGETS=softmax
 all : $(TARGETS)
 
 %.o: %.c $(HEADERS)
 	$(CC) -c $< -o $@ $(CC_OPTS)
 
-%: %.o mlp.o rand.o
+%: %.o rand.o
 	$(LD) $^ -o $@ $(LD_OPTS)
 
 clean:
