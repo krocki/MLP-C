@@ -16,7 +16,7 @@ all : $(TARGETS)
 	$(CC) -c $< -o $@ $(CC_OPTS)
 
 %: %.o rand.o
-	$(CC) $^ -o $@ $(CC_OPTS)
+	$(CC) $^ -o $@ $(CC_OPTS) -lm
 
 clean:
 	rm -rf $(TARGETS) *.o
